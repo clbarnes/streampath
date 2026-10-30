@@ -3,6 +3,14 @@
 macro_rules! impl_newtype_conversions {
     ($t:ident) => {
         impl $t {
+            /// Like [FromStr](std::str::FromStr), but for OS strings
+            /// (which may not be valid UTF-8).
+            ///
+            /// `-` becomes a stream; anything else is treated as a path.
+            pub fn from_os_str(s: impl AsRef<std::ffi::OsStr>) -> Self {
+                $t($crate::StreamPath::from_os_str(s))
+            }
+
             /// The path of the file, or `None` if this represents a stream (or buffer).
             pub fn path(&self) -> Option<&std::path::Path> {
                 self.0.path()
@@ -66,6 +74,20 @@ macro_rules! impl_newtype_conversions {
         impl From<std::path::PathBuf> for $t {
             fn from(path: std::path::PathBuf) -> Self {
                 $t(path.into())
+            }
+        }
+
+        /// `-` becomes a stream; anything else is treated as a path.
+        impl From<&std::ffi::OsStr> for $t {
+            fn from(s: &std::ffi::OsStr) -> Self {
+                $t(s.into())
+            }
+        }
+
+        /// `-` becomes a stream; anything else is treated as a path.
+        impl From<std::ffi::OsString> for $t {
+            fn from(s: std::ffi::OsString) -> Self {
+                $t(s.into())
             }
         }
 

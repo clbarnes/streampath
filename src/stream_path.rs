@@ -1,6 +1,7 @@
 use std::fmt::Display;
 use std::{
     convert::Infallible,
+    ffi::{OsStr, OsString},
     path::{Path, PathBuf},
     str::FromStr,
 };
@@ -34,6 +35,13 @@ impl Display for StreamPath {
 }
 
 impl StreamPath {
+    /// Like [FromStr], but for OS strings (which may not be valid UTF-8).
+    ///
+    /// `-` becomes [StreamPath::Stream]; anything else is treated as a path.
+    pub fn from_os_str(s: impl AsRef<OsStr>) -> Self {
+        s.as_ref().into()
+    }
+
     /// The path of the file, or `None` if this represents a stream (or buffer).
     pub fn path(&self) -> Option<&Path> {
         match self {
@@ -94,15 +102,34 @@ impl From<PathBuf> for StreamPath {
     }
 }
 
+/// `-` becomes [StreamPath::Stream]; anything else is treated as a path.
+impl From<&OsStr> for StreamPath {
+    fn from(s: &OsStr) -> Self {
+        if s == "-" {
+            StreamPath::Stream
+        } else {
+            StreamPath::Path(PathBuf::from(s))
+        }
+    }
+}
+
+/// `-` becomes [StreamPath::Stream]; anything else is treated as a path.
+/// Does not reallocate.
+impl From<OsString> for StreamPath {
+    fn from(s: OsString) -> Self {
+        if s == "-" {
+            StreamPath::Stream
+        } else {
+            StreamPath::Path(PathBuf::from(s))
+        }
+    }
+}
+
 impl FromStr for StreamPath {
     type Err = Infallible;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s == "-" {
-            Ok(StreamPath::Stream)
-        } else {
-            Ok(StreamPath::Path(PathBuf::from(s)))
-        }
+        Ok(Self::from_os_str(s))
     }
 }
 
@@ -130,6 +157,37 @@ mod tests {
             let sp: StreamPath = s.parse().unwrap();
             assert_eq!(sp, StreamPath::Path(PathBuf::from(s)), "input {s:?}");
         }
+    }
+
+    #[test]
+    fn from_os_str_matches_from_str() {
+        for s in ["-", "--", "./-", "some/file.txt"] {
+            let expected: StreamPath = s.parse().unwrap();
+            assert_eq!(StreamPath::from_os_str(s), expected);
+            assert_eq!(StreamPath::from_os_str(OsStr::new(s)), expected);
+            assert_eq!(
+                StreamPath::from_os_str(std::ffi::OsString::from(s)),
+                expected
+            );
+            assert_eq!(StreamPath::from(OsStr::new(s)), expected);
+            assert_eq!(StreamPath::from(OsString::from(s)), expected);
+            assert_eq!(StreamPathRead::from(OsStr::new(s)).into_inner(), expected);
+            assert_eq!(
+                StreamPathWrite::from(OsString::from(s)).into_inner(),
+                expected
+            );
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn from_os_str_non_utf8() {
+        use std::os::unix::ffi::OsStrExt;
+        let raw = OsStr::from_bytes(b"bad\xffname");
+        assert_eq!(
+            StreamPath::from_os_str(raw),
+            StreamPath::Path(PathBuf::from(raw))
+        );
     }
 
     #[test]

@@ -4,7 +4,21 @@ Rust package representing either a standard stream (input/ output) or path argum
 
 ## Usage
 
-### With clap
+The [StreamPath] type represents either a path or standard stream.
+It can be converted into a [StreamPathRead] or [StreamPathWrite],
+which have some read-only or write-only convenience methods respectively,
+or can open an [std::io::Read]er/ [std::io::BufRead]er,
+or [std::io::Write]r/ buffered variant respectively.
+
+Any of these types can be parsed from a string via [std:str::FromStr],
+which is the stream if `"-"`, otherwise a [std::path::PathBuf].
+They can also be converted directly from a [std::ffi::OsStr](ing),
+in case your path isn't UTF-8.
+
+### With [clap](https://crates.io/crates/clap)
+
+Note that clap uses custom types' `FromStr` implementation,
+so paths must be UTF-8.
 
 ```rust
 use clap::Parser;
