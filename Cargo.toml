@@ -2,6 +2,9 @@
 name = "streampath"
 version = "0.1.0"
 edition = "2024"
+description = "Helper for path or stdin/stdout arguments in rust"
+repository = "https://github.com/clbarnes/streampath"
+license = "MIT"
 
 [features]
 ## Adds an in-memory `Vec<u8>` variant to `StreamPath`.
