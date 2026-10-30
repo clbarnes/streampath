@@ -8,7 +8,7 @@ Rust package representing either a standard stream (input/ output) or path argum
 
 ```rust
 use clap::Parser;
-use streamarg::{StreamPathRead, StreamPathWrite};
+use streampath::{StreamPathRead, StreamPathWrite};
 use std::io::Write;
 
 #[derive(Debug, Parser)]
