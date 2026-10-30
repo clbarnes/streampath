@@ -5,6 +5,9 @@ edition = "2024"
 description = "Helper for path or stdin/stdout arguments in rust"
 repository = "https://github.com/clbarnes/streampath"
 license = "MIT"
+authors = ["Chris Barnes <chrislloydbarnes@gmail.com>"]
+keywords = ["path", "stdin", "stdout", "clap", "cli"]
+categories = ["command-line-interface", "filesystem", "rust-patterns"]
 
 [features]
 ## Adds an in-memory `Vec<u8>` variant to `StreamPath`.
