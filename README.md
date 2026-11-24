@@ -1,5 +1,8 @@
 # streamarg
 
+> DEPRECATED: I wrote this before I found [clio](https://crates.io/crates/clio/).
+> You should use that.
+
 Rust package representing either a standard stream (input/ output) or path argument.
 
 ## Usage
@@ -50,6 +53,8 @@ Inspired by `take_bytes`.
 
 ## Alternatives
 
+- [clio](https://crates.io/crates/clio/)
+  - this is better, just use that
 - [clap-stdin](https://crates.io/crates/clap-stdin)
   - Uses dynamic dispatch for the readers/writers rather than an enum
   - Stores the path internally as a String (i.e. must be UTF-8)
